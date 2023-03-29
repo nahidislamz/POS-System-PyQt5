@@ -8,7 +8,7 @@ class MyWindow(QMainWindow):
 
         # create connection to database
         db = QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('mydatabase.db')
+        db.setDatabaseName('test.db')
         db.open()
 
         # create parent combo box

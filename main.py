@@ -72,7 +72,7 @@ class MyWindow(QWidget):
         # create database connection
         db = QSqlDatabase.addDatabase('QSQLITE')
         db.setDatabaseName('mydatabase.db')
-
+        #db.setConnectOptions('QSQLITE_OPEN_URI;QSQLITE_BUSY_TIMEOUT=5000')
         if not db.open():
             print('Unable to open database')
             exit(1)
@@ -91,7 +91,6 @@ class MyWindow(QWidget):
 
         tab3_layout.addLayout(grid_layout)
         tab3.setLayout(tab3_layout)
-
 
         # Create the layout
         hbox = QHBoxLayout()
@@ -115,6 +114,7 @@ class MyWindow(QWidget):
         cat_query = QSqlQuery('SELECT * FROM categories')
         while cat_query.next():
             self.cat_combo.addItem(cat_query.value('name'))
+        db.close()
         
         menu_item_input = QLineEdit()
         number_input = QLineEdit()
@@ -173,7 +173,6 @@ class MyWindow(QWidget):
         # create child table with foreign key to parent table
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS menus (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 category_id INTEGER,
                 menu_number INTEGER,
                 menu_item TEXT,
@@ -198,13 +197,12 @@ class MyWindow(QWidget):
         cat_name = self.cat_combo.currentText()
         cat_query = QSqlQuery(f"SELECT * FROM categories WHERE name = '{cat_name}'")
         cat_query.first()
-        cat_id = cat_query.value('id')
+        category_id = cat_query.value(0)
 
         # insert record into child table
         self.cursor.execute('''
-            INSERT INTO menus 
-        (category_id,menu_item, menu_number, price) 
-        VALUES (category_id, menu_item, menu_number,price)
+            INSERT INTO menus (category_id,menu_item, menu_number, price) 
+            VALUES (?, ?, ?,?)
         ''', (category_id, menu_item, menu_number,price))
         
         self.conn.commit()
@@ -228,14 +226,14 @@ class MyWindow(QWidget):
 
         # Add items to the list widget from the database
         db = QSqlDatabase.addDatabase('QSQLITE')
-        db.setDatabaseName('pos.db')
+        db.setDatabaseName('mydatabase.db')
         if not db.open():
             print("Could not open database")
             sys.exit(-1)
         query = QSqlQuery('SELECT * FROM categories')
         while query.next():
-            name = query.value(0)
-            range = query.value(1)
+            name = query.value(1)
+            range = query.value(2)
             self.list_widget.addItem(f'{name} \n {range}')
 
         # Set the central widget of the new window to the list widget
